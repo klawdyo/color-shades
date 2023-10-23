@@ -1,7 +1,51 @@
-export interface Hsl {
+export class Hsl {
   hue: number;
   saturation: number;
   lightness: number;
+
+  constructor(color: Hsl) {
+    this.hue = color.hue;
+    this.saturation = color.saturation;
+    this.lightness = color.lightness;
+  }
+
+  static fromString(color: string): Hsl {
+    // https://regexr.com/7m267
+    const rgx = /^hsl\s?\(([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[^0-9]*)?([0-9]{1,2}|100)(?:[^0-9]*)?([0-9]{1,2}|100)\s?%?\s?\)/i
+    const matches = rgx.exec(color)
+
+    if (!matches) throw new Error('Não é um HSL válido')
+
+    return new Hsl({
+      hue: +matches[1],
+      saturation: +matches[2],
+      lightness: +matches[3]
+    } as Hsl)
+  }
+
+  toRgb() {
+    // let { hue: h, saturation: s, lightness: l } = hsl
+    let h = this.hue;
+    let s = this.saturation;
+    let l = this.lightness;
+
+    s /= 100;
+    l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n =>
+      l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return {
+      red: Math.floor(255 * f(0)),
+      green: Math.floor(255 * f(8)),
+      blue: Math.floor(255 * f(4))
+    }
+  }
+
+  toString() {
+    return `hsl(${this.hue},${this.saturation}%,${this.lightness}%)`
+  }
+
 }
 
 export interface Rgb {
